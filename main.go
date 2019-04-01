@@ -1,29 +1,41 @@
 package main
 
 import (
-	"github.com/faiface/pixel"
-	"github.com/faiface/pixel/pixelgl"
-	"golang.org/x/image/colornames"
+	"github.com/gen2brain/raylib-go/raylib"
 )
 
-func run() {
-	cfg := pixelgl.WindowConfig{
-		Title:  "Breakout",
-		Bounds: pixel.R(0, 0, 1024, 768),
-		VSync:  true,
-	}
-	win, err := pixelgl.NewWindow(cfg)
-	if err != nil {
-		panic(err)
-	}
-
-	win.Clear(colornames.Lightseagreen)
-
-	for !win.Closed() {
-		win.Update()
-	}
-}
-
 func main() {
-	pixelgl.Run(run)
+	screenWidth := int32(800)
+	screenHeight := int32(450)
+
+	rl.InitWindow(screenWidth, screenHeight, "Breakout")
+
+	rl.SetTargetFPS(60)
+
+	var size int32 = 100
+
+	for !rl.WindowShouldClose() {
+
+
+		if(size <= 200){
+			size = size + 10;
+		}else{
+			size = 100;
+		}
+
+		rl.BeginDrawing()
+		rl.ClearBackground(rl.RayWhite)
+
+		rl.DrawText("A rectangle:", 20, 20, 20, rl.DarkGray)
+
+		rl.DrawLine(18, 42, screenWidth-18, 42, rl.Black)
+
+
+		rl.DrawRectangle(screenWidth/4*2-60, 100, size, 60, rl.Red)
+
+
+		rl.EndDrawing()
+	}
+
+	rl.CloseWindow()
 }

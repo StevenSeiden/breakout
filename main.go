@@ -16,12 +16,12 @@ func main() {
 
 	for !rl.WindowShouldClose() {
 
-
-		if(size <= 200){
-			size = size + 10;
-		}else{
-			size = 100;
+		if(rl.IsKeyDown(rl.KeyRight)){
+			size = size + 10
+		} else if(rl.IsKeyDown(rl.KeyLeft)){
+			size = size - 10
 		}
+
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
@@ -31,7 +31,7 @@ func main() {
 		rl.DrawLine(18, 42, screenWidth-18, 42, rl.Black)
 
 
-		rl.DrawRectangle(screenWidth/4*2-60, 100, size, 60, rl.Red)
+		rl.DrawRectangle(size, 100, 100, 200, rl.Red)
 
 
 		rl.EndDrawing()

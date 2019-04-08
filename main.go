@@ -20,9 +20,9 @@ var movingLeft = false
 func checkRebound() {
 	if ballY >= (windowY-25) && ballX >= paddlePos && ballX <= (paddlePos+50) {
 		ballMoveY = -ballMoveY
-		ballMoveX = -ballMoveX
-	} else if ballY <= 5 || ballX >= (windowX-5) || ballX <= 5 {
+	} else if ballY <= 5 {
 		ballMoveY = -ballMoveY
+	} else if ballX >= (windowX-5) || ballX <= 5 {
 		ballMoveX = -ballMoveX
 	}
 }

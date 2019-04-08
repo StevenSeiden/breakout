@@ -24,6 +24,8 @@ func checkRebound() {
 		ballMoveY = -ballMoveY
 	} else if ballX >= (windowX-5) || ballX <= 5 {
 		ballMoveX = -ballMoveX
+	} else if ballY > screenHeight{
+		reset()
 	}
 }
 
@@ -55,6 +57,14 @@ func launchBall() {
 
 }
 
+func reset(){
+	launching = false
+	ballX = windowX / 2
+	ballY = windowY - 30
+	ballMoveX = launchAngle
+	ballMoveY = -5
+}
+
 func main() {
 	rl.InitWindow(screenWidth, screenHeight, "Breakout")
 
@@ -64,10 +74,7 @@ func main() {
 		checkRebound()
 
 		if rl.IsKeyDown(rl.KeyR) {
-			ballX = windowX / 2
-			ballY = windowY - 25
-			ballMoveX = launchAngle
-			ballMoveY = -5
+			reset()
 		}
 
 		if launching {

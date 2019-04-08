@@ -48,7 +48,7 @@ func movePaddle() {
 }
 func launchBall() {
 
-	var ballX = paddlePos + 25
+	ballX = paddlePos + 25
 	movePaddle()
 	rl.DrawCircle(ballX, ballY, 10, rl.Red)
 

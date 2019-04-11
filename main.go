@@ -98,12 +98,16 @@ func main() {
 		 /*bool CheckCollisionPointRec(Vector2 point, Rectangle rec);  // Check if point is inside rectangle*/
 
 		rl.DrawRectangle(paddlePos, 430, 50, 10, rl.Red)
-		/* blocks should have 5 pixals between each other*/
+		/* blocks should have 5 pixels between each other*/
 		//for loop to draw all the rectangle
-		for i := 800; i >= 20; i = i - 45 {
-			
-			rl.DrawRectangle(int32(i), 0, 40, 10, rl.Red)
+		bricks := [][]int{{20,60},{80,200}}
+		for i := 0; i <= 1; i++ {
+			rl.DrawRectangle(int32((bricks[i])[0]), int32((bricks[i])[1]), 40, 10, rl.Red)
 		}
+
+
+
+
 
 		rl.EndDrawing()
 	}

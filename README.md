@@ -5,3 +5,9 @@ Dependencies:
 
 - [Raylib](https://github.com/gen2brain/raylib-go)
 
+
+
+Misc information:
+
+- [Composit Literals](https://golang.org/ref/spec#Composite_literals)
+

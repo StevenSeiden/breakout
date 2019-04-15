@@ -8,6 +8,8 @@ var windowX int32 = 800
 var windowY int32 = 450
 var screenWidth = int32(windowX)
 var screenHeight = int32(windowY)
+var blockSize = 40
+var blockRow = 20
 var paddlePos = windowX/2 - 20
 var ballX = windowX / 2
 var ballY = windowY - 30
@@ -100,9 +102,14 @@ func main() {
 		rl.DrawRectangle(paddlePos, 430, 50, 10, rl.Red)
 		/* blocks should have 5 pixels between each other*/
 		//for loop to draw all the rectangle
-		bricks := [][]int{{20,60},{80,200}}
-		for i := 0; i <= 1; i++ {
-			rl.DrawRectangle(int32((bricks[i])[0]), int32((bricks[i])[1]), 40, 10, rl.Red)
+		bricks := [][]int{}
+		for i := 5; i <= int(windowX); i = i+blockSize+10{
+			for j := 0; j<= blockRow; j++ {
+				bricks = append(bricks, []int{i, 11*j})
+			}
+		}
+		for i := 0; i <= len(bricks)-1; i++ {
+			rl.DrawRectangle(int32((bricks[i])[0]), int32((bricks[i])[1]), int32(blockSize), 10, rl.Red)
 		}
 
 

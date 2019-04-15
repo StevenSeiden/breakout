@@ -4,12 +4,11 @@ import (
 	"github.com/gen2brain/raylib-go/raylib"
 )
 
-var windowX int32 = 800
+var windowX int32 = 807
 var windowY int32 = 450
-var screenWidth = int32(windowX)
-var screenHeight = int32(windowY)
-var blockSize = 40
-var blockRow = 20
+var blockWidth int32 = 30
+var blockHeight int32 = 10
+var blockRow int32 = 15
 var paddlePos = windowX/2 - 20
 var ballX = windowX / 2
 var ballY = windowY - 30
@@ -19,18 +18,19 @@ var ballMoveY int32 = 0
 var playing = false
 var movingLeft = false
 
+type Bricks [][]int32
 
-
-func checkRebound() {
+func checkRebound(bricks Bricks) Bricks  {
 	if ballY >= (windowY-25) && ballX >= paddlePos && ballX <= (paddlePos+50) {
 		ballMoveY = -ballMoveY
 	} else if ballY <= 5 {
 		ballMoveY = -ballMoveY
 	} else if ballX >= (windowX-5) || ballX <= 5 {
 		ballMoveX = -ballMoveX
-	} else if ballY > screenHeight{
+	} else if ballY > windowY{
 		reset()
 	}
+	return bricks
 }
 
 func movePaddle() {
@@ -76,20 +76,41 @@ func reset(){
 	ballMoveX = launchAngle
 	ballMoveY = -5
 }
+func drawBricks() Bricks{
+	bricks := Bricks{}
+	for i  := int32(1); i <= windowX; i = i + blockWidth + 1{
+		for j := int32(0); j<= blockRow; j++ {
+			bricks = append(bricks, []int32{i, int32(11)*j})
+		}
+	}
+	for i := 0; i <= len(bricks)-1; i++ {
+		rl.DrawRectangle(bricks[i][0], bricks[i][1], blockWidth, blockHeight, rl.Red)
+	}
+	return bricks
+
+}
+
+
+func drawBoard(){
+	drawBricks()
+	rl.DrawRectangle(paddlePos, 430, 50, 10, rl.Red)
+
+}
 
 func main() {
-	rl.InitWindow(screenWidth, screenHeight, "Breakout")
+	rl.InitWindow(windowX, windowY, "Breakout")
 
 	rl.SetTargetFPS(60)
-
+	bricks := drawBricks()
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
-		checkRebound()
+		checkRebound(bricks)
 		if rl.IsKeyDown(rl.KeyR) {
 			reset()
 		}
 		movePaddle()
+
 		if playing {
 			ballX += ballMoveX
 			ballY += ballMoveY
@@ -98,23 +119,7 @@ func main() {
 			launchBall()
 		}
 		 /*bool CheckCollisionPointRec(Vector2 point, Rectangle rec);  // Check if point is inside rectangle*/
-
-		rl.DrawRectangle(paddlePos, 430, 50, 10, rl.Red)
-		/* blocks should have 5 pixels between each other*/
-		//for loop to draw all the rectangle
-		bricks := [][]int{}
-		for i := 5; i <= int(windowX); i = i+blockSize+10{
-			for j := 0; j<= blockRow; j++ {
-				bricks = append(bricks, []int{i, 11*j})
-			}
-		}
-		for i := 0; i <= len(bricks)-1; i++ {
-			rl.DrawRectangle(int32((bricks[i])[0]), int32((bricks[i])[1]), int32(blockSize), 10, rl.Red)
-		}
-
-
-
-
+		drawBoard()
 
 		rl.EndDrawing()
 	}

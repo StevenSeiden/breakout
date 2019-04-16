@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/dogboy21/go-discord-rp/connection"
 	"github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -20,6 +21,11 @@ var movingLeft = false
 
 
 type Bricks [][]int32
+
+func init() {
+	connection.OpenSocket("564965758178820146")
+	connection.SetActivity("State", "Details", "pixel_large", "Small Text.", "pixel_large", "BIGGER TEXT.")
+}
 
 func checkRebound(bricks Bricks) Bricks  {
 	if ballY >= (windowY-25) && ballX >= paddlePos && ballX <= (paddlePos+50) {
@@ -110,7 +116,7 @@ func drawBoard(bricks Bricks){
 
 func main() {
 	rl.InitWindow(windowX, windowY, "Breakout")
-	rl.SetTargetFPS(10)
+	rl.SetTargetFPS(60)
 	bricks := genBricks()
 
 	for !rl.WindowShouldClose() {

@@ -18,6 +18,7 @@ var ballMoveY int32 = 0
 var playing = false
 var movingLeft = false
 
+
 type Bricks [][]int32
 
 func checkRebound(bricks Bricks) Bricks  {
@@ -28,10 +29,18 @@ func checkRebound(bricks Bricks) Bricks  {
 	} else if ballX >= (windowX-5) || ballX <= 5 {
 		ballMoveX = -ballMoveX
 	} else if ballY > windowY{
-		reset()
+		return reset()
+	} else {
+		for i := 0; i <= len(bricks)-1; i++ {
+			if ballX - 20 >= bricks[i][0] && ballX - 20 <= bricks[i][0] + blockWidth && ballY - 20 >= bricks[i][1] && ballY - 20 <= bricks[i][1] {
+				ballMoveY = -ballMoveY;
+				return append(bricks[:i], bricks[i+1:]...)
+			}
+		}
 	}
 	return bricks
 }
+
 
 func movePaddle() {
 	if rl.IsKeyDown(rl.KeyRight) {
@@ -51,9 +60,8 @@ func movePaddle() {
 	}
 }
 func launchBall() {
-
 	ballX = paddlePos + 25
-	rl.DrawCircle(ballX, ballY, 10, rl.Red)
+	rl.DrawCircle(ballX, ballY, 10, rl.Purple)
 
 	rl.DrawLineEx(rl.NewVector2(float32(ballX), float32(ballY)),
 		rl.NewVector2(float32(ballX+launchAngle*5), float32(ballY-25)), 5, rl.Blue)
@@ -69,57 +77,60 @@ func launchBall() {
 
 }
 
-func reset(){
+func reset() Bricks{
 	playing = false
 	ballX = windowX / 2
 	ballY = windowY - 30
 	ballMoveX = launchAngle
 	ballMoveY = -5
+	paddlePos = windowX/2 - 20
+	return genBricks()
 }
-func drawBricks() Bricks{
+
+func drawBricks(bricks Bricks){
+	for i := 0; i <= len(bricks)-1; i++ {
+		rl.DrawRectangle(bricks[i][0], bricks[i][1], blockWidth, blockHeight, rl.Red)
+	}
+}
+
+func genBricks() Bricks{
 	bricks := Bricks{}
 	for i  := int32(1); i <= windowX; i = i + blockWidth + 1{
 		for j := int32(0); j<= blockRow; j++ {
 			bricks = append(bricks, []int32{i, int32(11)*j})
 		}
 	}
-	for i := 0; i <= len(bricks)-1; i++ {
-		rl.DrawRectangle(bricks[i][0], bricks[i][1], blockWidth, blockHeight, rl.Red)
-	}
 	return bricks
-
 }
 
-
-func drawBoard(){
-	drawBricks()
+func drawBoard(bricks Bricks){
+	drawBricks(bricks)
 	rl.DrawRectangle(paddlePos, 430, 50, 10, rl.Red)
-
 }
 
 func main() {
 	rl.InitWindow(windowX, windowY, "Breakout")
+	rl.SetTargetFPS(10)
+	bricks := genBricks()
 
-	rl.SetTargetFPS(60)
-	bricks := drawBricks()
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
-		checkRebound(bricks)
+		bricks = checkRebound(bricks)
 		if rl.IsKeyDown(rl.KeyR) {
-			reset()
+			bricks = reset()
 		}
 		movePaddle()
 
 		if playing {
 			ballX += ballMoveX
 			ballY += ballMoveY
-			rl.DrawCircle(ballX, ballY, 10, rl.Red)
+			rl.DrawCircle(ballX, ballY, 10, rl.Purple)
 		} else {
 			launchBall()
 		}
 		 /*bool CheckCollisionPointRec(Vector2 point, Rectangle rec);  // Check if point is inside rectangle*/
-		drawBoard()
+		drawBoard(bricks)
 
 		rl.EndDrawing()
 	}

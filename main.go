@@ -10,14 +10,16 @@ var windowY int32 = 450
 var blockWidth int32 = 30
 var blockHeight int32 = 10
 var blockRow int32 = 15
-var paddlePos = windowX/2 - 20
-var ballX = windowX / 2
+var paddlePos = windowX/2 - paddleWidth/2
+var ballSize float32 = 10
+var ballX = windowX / 2 + 10/2
 var ballY = windowY - 30
 var launchAngle int32 = 0
 var ballMoveX int32 = 0
 var ballMoveY int32 = 0
 var playing = false
 var movingLeft = false
+var paddleWidth int32  = 80
 
 
 type Bricks [][]int32
@@ -28,18 +30,23 @@ func init() {
 }
 
 func checkRebound(bricks Bricks) Bricks  {
-	if ballY >= (windowY-25) && ballX >= paddlePos && ballX <= (paddlePos+50) {
-		ballMoveY = -ballMoveY
+	if ballY >= (windowY-25){
+		if(ballX >= paddlePos && ballX <= (paddlePos+paddleWidth)) {
+			ballMoveY = -ballMoveY
+		}else{
+			return reset()
+		}
 	} else if ballY <= 5 {
 		ballMoveY = -ballMoveY
 	} else if ballX >= (windowX-5) || ballX <= 5 {
 		ballMoveX = -ballMoveX
-	} else if ballY > windowY{
+	} else if ballY > windowY-20{
 		return reset()
-	} else {
+	} else {  //Checking for brick collisions
 		for i := 0; i <= len(bricks)-1; i++ {
-			if ballX - 20 >= bricks[i][0] && ballX - 20 <= bricks[i][0] + blockWidth && ballY - 20 >= bricks[i][1] && ballY - 20 <= bricks[i][1] {
-				ballMoveY = -ballMoveY;
+			if ballX + int32(ballSize) >= bricks[i][0] && ballX + int32(ballSize) <= bricks[i][0] + blockWidth &&
+				ballY - int32(ballSize) >= bricks[i][1] && ballY - int32(ballSize) <= bricks[i][1] {
+				ballMoveY = -ballMoveY
 				return append(bricks[:i], bricks[i+1:]...)
 			}
 		}
@@ -67,7 +74,7 @@ func movePaddle() {
 }
 func launchBall() {
 	ballX = paddlePos + 25
-	rl.DrawCircle(ballX, ballY, 10, rl.Purple)
+	rl.DrawCircle(ballX, ballY, ballSize, rl.Purple)
 
 	rl.DrawLineEx(rl.NewVector2(float32(ballX), float32(ballY)),
 		rl.NewVector2(float32(ballX+launchAngle*5), float32(ballY-25)), 5, rl.Blue)
@@ -111,7 +118,7 @@ func genBricks() Bricks{
 
 func drawBoard(bricks Bricks){
 	drawBricks(bricks)
-	rl.DrawRectangle(paddlePos, 430, 50, 10, rl.Red)
+	rl.DrawRectangle(paddlePos, windowY-20, paddleWidth, 10, rl.Red)
 }
 
 func main() {
@@ -131,7 +138,7 @@ func main() {
 		if playing {
 			ballX += ballMoveX
 			ballY += ballMoveY
-			rl.DrawCircle(ballX, ballY, 10, rl.Purple)
+			rl.DrawCircle(ballX, ballY, ballSize, rl.Purple)
 		} else {
 			launchBall()
 		}
@@ -139,6 +146,8 @@ func main() {
 		drawBoard(bricks)
 
 		rl.EndDrawing()
+
+		//paddlePos = ballX - 20 //Enable to automate the game
 	}
 
 	rl.CloseWindow()

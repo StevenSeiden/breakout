@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/dogboy21/go-discord-rp/connection"
 	"github.com/gen2brain/raylib-go/raylib"
 )
@@ -20,6 +21,7 @@ var ballMoveY int32 = 0
 var playing = false
 var movingLeft = false
 var paddleWidth int32  = 80
+var debugMode = true
 
 
 type Bricks [][]int32
@@ -36,17 +38,19 @@ func checkRebound(bricks Bricks) Bricks  {
 		}else{
 			return reset()
 		}
-	} else if ballY <= 5 {
+	} else if ballY <= int32(ballSize) {
 		ballMoveY = -ballMoveY
-	} else if ballX >= (windowX-5) || ballX <= 5 {
+	} else if ballX >= (windowX-int32(ballSize)) || ballX <= int32(ballSize) {
 		ballMoveX = -ballMoveX
 	} else if ballY > windowY-20{
 		return reset()
 	} else {  //Checking for brick collisions
 		for i := 0; i <= len(bricks)-1; i++ {
-			if ballX + int32(ballSize) >= bricks[i][0] && ballX + int32(ballSize) <= bricks[i][0] + blockWidth &&
-				ballY - int32(ballSize) >= bricks[i][1] && ballY - int32(ballSize) <= bricks[i][1] {
+			if(debugMode){fmt.Println("Checking brick #" + fmt.Sprintf("%d", i))}
+			if ballX + int32(ballSize) >= bricks[i][0] && ballX - int32(ballSize) <= bricks[i][0] + blockWidth &&
+				ballY + int32(ballSize) >= bricks[i][1]  && ballY - int32(ballSize) <= bricks[i][1] + blockHeight{
 				ballMoveY = -ballMoveY
+				if(debugMode){fmt.Println("COLLISION with brick #" + fmt.Sprintf("%d", i))}
 				return append(bricks[:i], bricks[i+1:]...)
 			}
 		}
@@ -74,7 +78,7 @@ func movePaddle() {
 }
 func launchBall() {
 	ballX = paddlePos + 25
-	rl.DrawCircle(ballX, ballY, ballSize, rl.Purple)
+	rl.DrawCircle(ballX, ballY, ballSize, rl.DarkPurple)
 
 	rl.DrawLineEx(rl.NewVector2(float32(ballX), float32(ballY)),
 		rl.NewVector2(float32(ballX+launchAngle*5), float32(ballY-25)), 5, rl.Blue)
@@ -103,6 +107,7 @@ func reset() Bricks{
 func drawBricks(bricks Bricks){
 	for i := 0; i <= len(bricks)-1; i++ {
 		rl.DrawRectangle(bricks[i][0], bricks[i][1], blockWidth, blockHeight, rl.Red)
+		if(debugMode){rl.DrawText(fmt.Sprintf("%d", i), bricks[i][0], bricks[i][1], 7, rl.White)}
 	}
 }
 
@@ -123,11 +128,11 @@ func drawBoard(bricks Bricks){
 
 func main() {
 	rl.InitWindow(windowX, windowY, "Breakout")
-	rl.SetTargetFPS(60)
+	rl.SetTargetFPS(6000)
+	rl.BeginDrawing()
 	bricks := genBricks()
 
 	for !rl.WindowShouldClose() {
-		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
 		bricks = checkRebound(bricks)
 		if rl.IsKeyDown(rl.KeyR) {
@@ -138,7 +143,7 @@ func main() {
 		if playing {
 			ballX += ballMoveX
 			ballY += ballMoveY
-			rl.DrawCircle(ballX, ballY, ballSize, rl.Purple)
+			rl.DrawCircle(ballX, ballY, ballSize, rl.DarkPurple)
 		} else {
 			launchBall()
 		}
@@ -147,7 +152,7 @@ func main() {
 
 		rl.EndDrawing()
 
-		//paddlePos = ballX - 20 //Enable to automate the game
+		if(debugMode){paddlePos = ballX - 35} //Enable to automate the game
 	}
 
 	rl.CloseWindow()

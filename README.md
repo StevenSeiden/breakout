@@ -10,5 +10,5 @@ Dependencies:
 
 Misc information:
 
-- [Composit Literals](https://golang.org/ref/spec#Composite_literals)
+- [Composite Literals](https://golang.org/ref/spec#Composite_literals)
 

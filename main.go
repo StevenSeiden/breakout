@@ -26,8 +26,9 @@ var ballMoveY int32 = 0
 var playing = false
 var movingLeft = false
 var paddleWidth int32 = 80
+var score = 0
 
-const debugMode = false
+const debugMode = true
 
 type Bricks [][]int32
 
@@ -57,6 +58,7 @@ func checkRebound(bricks Bricks) Bricks {
 			if ballX+int32(ballSize) >= bricks[i][0] && ballX-int32(ballSize) <= bricks[i][0]+blockWidth &&
 				ballY+int32(ballSize) >= bricks[i][1] && ballY-int32(ballSize) <= bricks[i][1]+blockHeight {
 				ballMoveY = -ballMoveY
+				score = score +100
 				if debugMode {
 					fmt.Println("COLLISION with brick #" + fmt.Sprintf("%d", i))
 				}
@@ -109,6 +111,7 @@ func reset() Bricks {
 	ballMoveX = int32(launchAngle)
 	ballMoveY = -5
 	paddlePos = windowX/2 - 20
+	score = 0
 	return genBricks()
 }
 
@@ -119,6 +122,7 @@ func drawBricks(bricks Bricks) {
 			rl.DrawText(fmt.Sprintf("%d", i), bricks[i][0], bricks[i][1], 7, rl.White)
 		}
 	}
+
 }
 
 func genBricks() Bricks {
@@ -134,6 +138,7 @@ func genBricks() Bricks {
 func drawBoard(bricks Bricks) {
 	drawBricks(bricks)
 	rl.DrawRectangle(paddlePos, windowY-20, paddleWidth, 10, rl.Red)
+	rl.DrawText(fmt.Sprintf("%v",score), 750,windowY-40 , 10,rl.Red)
 }
 
 func main() {

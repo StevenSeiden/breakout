@@ -34,7 +34,7 @@ type Bricks [][]int32
 
 func init() {
 	connection.OpenSocket("564965758178820146")
-	connection.SetActivity("State", "Details", "pixel_large", "Small Text.", "pixel_large", "BIGGER TEXT.")
+	connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score), "pixel_large", "Beta", "logo_pixelated", "This is a picture of Taylor.")
 }
 
 func checkRebound(bricks Bricks) Bricks {
@@ -58,7 +58,8 @@ func checkRebound(bricks Bricks) Bricks {
 			if ballX+int32(ballSize) >= bricks[i][0] && ballX-int32(ballSize) <= bricks[i][0]+blockWidth &&
 				ballY+int32(ballSize) >= bricks[i][1] && ballY-int32(ballSize) <= bricks[i][1]+blockHeight {
 				ballMoveY = -ballMoveY
-				score = score +100
+				score = score + 100
+				connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score), "pixel_large", "Beta", "logo_pixelated", "This is a picture of Taylor.")
 				if debugMode {
 					fmt.Println("COLLISION with brick #" + fmt.Sprintf("%d", i))
 				}

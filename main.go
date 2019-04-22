@@ -27,8 +27,9 @@ var playing = false
 var movingLeft = false
 var paddleWidth int32 = 80
 var score = 0
+var startGame = true
 
-const debugMode = true
+const debugMode = false
 
 type Bricks [][]int32
 
@@ -150,27 +151,34 @@ func main() {
 
 	for !rl.WindowShouldClose() {
 		rl.ClearBackground(rl.RayWhite)
-		bricks = checkRebound(bricks)
-		if rl.IsKeyDown(rl.KeyR) {
-			bricks = reset()
+		if !startGame {
+			bricks = checkRebound(bricks)
+			if rl.IsKeyDown(rl.KeyR) {
+				bricks = reset()
+			}
+			movePaddle()
+
+			if playing {
+				ballX += ballMoveX
+				ballY += ballMoveY
+				rl.DrawCircle(ballX, ballY, ballSize, rl.DarkPurple)
+			} else {
+				launchBall()
+			}
+			/*bool CheckCollisionPointRec(Vector2 point, Rectangle rec);  // Check if point is inside rectangle*/
+			drawBoard(bricks)
+
+			rl.EndDrawing()
+
+			if debugMode {
+				paddlePos = ballX - 35
+			} //Enable to automate the game
+		}else {
+			rl.DrawRectangle(10,10,10,10,rl.DarkGreen)
+			if rl.IsKeyDown(rl.KeyS){
+				startGame = false
+			}
 		}
-		movePaddle()
-
-		if playing {
-			ballX += ballMoveX
-			ballY += ballMoveY
-			rl.DrawCircle(ballX, ballY, ballSize, rl.DarkPurple)
-		} else {
-			launchBall()
-		}
-		/*bool CheckCollisionPointRec(Vector2 point, Rectangle rec);  // Check if point is inside rectangle*/
-		drawBoard(bricks)
-
-		rl.EndDrawing()
-
-		if debugMode {
-			paddlePos = ballX - 35
-		} //Enable to automate the game
 	}
 
 	rl.CloseWindow()

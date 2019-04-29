@@ -56,7 +56,7 @@ func checkRebound(bricks Bricks) Bricks {
 				fmt.Println("Checking brick #" + fmt.Sprintf("%d", i))
 			}
 			if ballX+int32(ballSize) >= bricks[i][0] && ballX-int32(ballSize) <= bricks[i][0]+blockWidth &&
-				ballY+int32(ballSize) >= bricks[i][1] && ballY-int32(ballSize) <= bricks[i][1]+blockHeight {
+				(ballY-int32(ballSize) <= bricks[i][1]+blockHeight && ballY+int32(ballSize) >= bricks[i][1]){
 				ballMoveY = -ballMoveY
 				score = score + 100
 				connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score), "pixel_large", "Beta", "logo_pixelated", "This is a picture of Taylor.")
@@ -144,7 +144,7 @@ func drawBoard(bricks Bricks) {
 
 func main() {
 	rl.InitWindow(windowX, windowY, "Breakout")
-	rl.SetTargetFPS(60)
+	rl.SetTargetFPS(15)
 	rl.BeginDrawing()
 	bricks := genBricks()
 

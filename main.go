@@ -57,13 +57,22 @@ func checkRebound(bricks Bricks) Bricks {
 			}
 			if ballX+int32(ballSize) >= bricks[i][0] && ballX-int32(ballSize) <= bricks[i][0]+blockWidth &&
 				(ballY-int32(ballSize) <= bricks[i][1]+blockHeight && ballY+int32(ballSize) >= bricks[i][1]){
-				ballMoveY = -ballMoveY
+
+				if ballX+int32(ballSize) <= (bricks[i][0]+5) ||
+									ballX-int32(ballSize) >= bricks[i][0]+(blockWidth-5) {
+					ballMoveX = -ballMoveX
+
+					return append(bricks[:i], bricks[i+1:]...)
+				} else {
+					ballMoveY = -ballMoveY
+				}
+				return append(bricks[:i], bricks[i+1:]...)
 				score = score + 100
 				connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score), "pixel_large", "Beta", "logo_pixelated", "This is a picture of Taylor.")
 				if debugMode {
 					fmt.Println("COLLISION with brick #" + fmt.Sprintf("%d", i))
 				}
-				return append(bricks[:i], bricks[i+1:]...)
+
 			}
 		}
 	}

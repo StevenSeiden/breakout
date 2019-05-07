@@ -5,6 +5,8 @@ import (
 	"github.com/dogboy21/go-discord-rp/connection"
 	"github.com/gen2brain/raylib-go/raylib"
 	"math"
+	"math/rand"
+	"time"
 )
 
 var windowX int32 = 807
@@ -66,12 +68,12 @@ func checkRebound(bricks Bricks) Bricks {
 				} else {
 					ballMoveY = -ballMoveY
 				}
-				return append(bricks[:i], bricks[i+1:]...)
-				score = score + 100
+				score = score + int(bricks[i][2])
 				connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score), "pixel_large", "Beta", "logo_pixelated", "This is a picture of Taylor.")
 				if debugMode {
 					fmt.Println("COLLISION with brick #" + fmt.Sprintf("%d", i))
 				}
+				return append(bricks[:i], bricks[i+1:]...)
 
 			}
 		}
@@ -127,7 +129,11 @@ func reset() Bricks {
 
 func drawBricks(bricks Bricks) {
 	for i := 0; i <= len(bricks)-1; i++ {
-		rl.DrawRectangle(bricks[i][0], bricks[i][1], blockWidth, blockHeight, rl.Red)
+		if(bricks[i][2] == 100) {
+			rl.DrawRectangle(bricks[i][0], bricks[i][1], blockWidth, blockHeight, rl.Red)
+		} else {
+			rl.DrawRectangle(bricks[i][0], bricks[i][1], blockWidth, blockHeight, rl.Blue)
+		}
 		if debugMode {
 			rl.DrawText(fmt.Sprintf("%d", i), bricks[i][0], bricks[i][1], 7, rl.White)
 		}
@@ -136,10 +142,15 @@ func drawBricks(bricks Bricks) {
 }
 
 func genBricks() Bricks {
+	rand.Seed(time.Now().UTC().UnixNano())
 	bricks := Bricks{}
 	for i := int32(1); i <= windowX; i = i + blockWidth + 1 {
 		for j := int32(0); j <= blockRow; j++ {
-			bricks = append(bricks, []int32{i, int32(11) * j})
+			if 1 + rand.Intn(9) > 8 {
+				bricks = append(bricks, []int32{i, int32(11) * j, 200})
+			}else{
+				bricks = append(bricks, []int32{i, int32(11) * j, 100})
+			}
 		}
 	}
 	return bricks

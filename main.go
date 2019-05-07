@@ -29,6 +29,7 @@ var playing = false
 var movingLeft = false
 var paddleWidth int32 = 80
 var score = 0
+var paddleFollowing = true
 
 const debugMode = false
 
@@ -63,10 +64,21 @@ func checkRebound(bricks Bricks) Bricks {
 				if ballX+int32(ballSize) <= (bricks[i][0]+5) ||
 									ballX-int32(ballSize) >= bricks[i][0]+(blockWidth-5) {
 					ballMoveX = -ballMoveX
-
+					score = score + 100
+					connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score), "pixel_large", "Beta", "logo_pixelated", "This is a picture of Taylor.")
+					if debugMode {
+						fmt.Println("COLLISION with brick #" + fmt.Sprintf("%d", i))
+					}
 					return append(bricks[:i], bricks[i+1:]...)
 				} else {
 					ballMoveY = -ballMoveY
+					score = score + 100
+
+					connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score), "pixel_large", "Beta", "logo_pixelated", "This is a picture of Taylor.")
+					if debugMode {
+						fmt.Println("COLLISION with brick #" + fmt.Sprintf("%d", i))
+					}
+					return append(bricks[:i], bricks[i+1:]...)
 				}
 				score = score + int(bricks[i][2])
 				connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score), "pixel_large", "Beta", "logo_pixelated", "This is a picture of Taylor.")
@@ -82,20 +94,25 @@ func checkRebound(bricks Bricks) Bricks {
 }
 
 func movePaddle() {
-	if rl.IsKeyDown(rl.KeyRight) {
-		paddlePos = paddlePos + 10
-	} else if rl.IsKeyDown(rl.KeyLeft) {
-		paddlePos = paddlePos - 10
-	} else if rl.IsKeyDown(rl.KeySpace) {
-		playing = true
-		ballMoveX = int32(launchAngle)
-		ballMoveY = int32(math.Abs(launchAngle)) - 8
-	}
+	if !paddleFollowing{
+		if rl.IsKeyDown(rl.KeyRight) {
+			paddlePos = paddlePos + 10
+		} else if rl.IsKeyDown(rl.KeyLeft) {
+			paddlePos = paddlePos - 10
+		} else if rl.IsKeyDown(rl.KeySpace) {
+			playing = true
+			ballMoveX = int32(launchAngle)
+			ballMoveY = int32(math.Abs(launchAngle)) - 8
+		}
 
-	if paddlePos < -5 {
-		paddlePos = windowX + 5
-	} else if paddlePos > windowX+5 {
-		paddlePos = -5
+		if paddlePos < -5 {
+			paddlePos = windowX + 5
+		} else if paddlePos > windowX+5 {
+			paddlePos = -5
+		}
+
+	}else{
+		paddlePos = rl.GetMouseX()
 	}
 }
 func launchBall() {

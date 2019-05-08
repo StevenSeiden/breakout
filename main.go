@@ -113,6 +113,11 @@ func movePaddle() {
 
 	}else{
 		paddlePos = rl.GetMouseX()
+		if rl.IsKeyDown(rl.KeySpace) {
+			playing = true
+			ballMoveX = int32(launchAngle)
+			ballMoveY = int32(math.Abs(launchAngle)) - 8
+		}
 	}
 }
 func launchBall() {

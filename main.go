@@ -21,7 +21,7 @@ var paddlePos = windowX/2 - paddleWidth/2
 const ballSize float32 = 10
 
 var ballX = windowX/2 + 10/2
-var ballY = windowY - 30
+var ballY = windowY - 300
 var launchAngle float64 = 0
 var ballMoveX int32 = 0
 var ballMoveY int32 = 0
@@ -39,6 +39,14 @@ func init() {
 	connection.OpenSocket("564965758178820146")
 	connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score), "pixel_large",
 		"Beta", "logo_pixelated", "This is a picture of Taylor.")
+}
+
+func getTime(ballPos int32, ballSpeed int32, brickPosition int32) float64 {
+	retVal := float64(brickPosition-ballPos-ballSpeed) / float64(ballSpeed)
+	if retVal < 0 {
+		return math.MaxFloat64
+	}
+	return retVal
 }
 
 func checkRebound(bricks Bricks) Bricks {
@@ -59,11 +67,19 @@ func checkRebound(bricks Bricks) Bricks {
 			if debugMode {
 				fmt.Println("Checking brick #" + fmt.Sprintf("%d", i))
 			}
+			//Is the ball within the bricks?
 			if ballX+int32(ballSize) >= bricks[i][0] && ballX-int32(ballSize) <= bricks[i][0]+blockWidth &&
-				(ballY-int32(ballSize) <= bricks[i][1]+blockHeight && ballY+int32(ballSize) >= bricks[i][1]){
+				(ballY-int32(ballSize) <= bricks[i][1]+blockHeight && ballY+int32(ballSize) >= bricks[i][1]) {
 
-				if ballX+int32(ballSize) <= (bricks[i][0]) ||
-									ballX-int32(ballSize) >= bricks[i][0]+(blockWidth) {
+				timeToLeft := getTime(ballX+int32(ballSize), ballMoveX, bricks[i][0])
+				timeToRight := getTime(ballX-int32(ballSize), ballMoveX, bricks[i][0]+blockWidth)
+				timeToTop := getTime(ballY+int32(ballSize), ballMoveY, bricks[i][1])
+				timeToBottom := getTime(ballY-int32(ballSize), ballMoveY, bricks[i][1]+blockWidth)
+
+				if timeToLeft < timeToTop &&
+					timeToLeft < timeToBottom ||
+					timeToRight < timeToTop &&
+						timeToRight < timeToBottom {
 					ballMoveX = -ballMoveX
 					score = score + int(bricks[i][2])
 					connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score),
@@ -85,39 +101,32 @@ func checkRebound(bricks Bricks) Bricks {
 					}
 					return append(bricks[:i], bricks[i+1:]...)
 				}
-				/*score = score + int(bricks[i][2])
-				connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score), "pixel_large", "Beta", "logo_pixelated", "This is a picture of Taylor.")
-				if debugMode {
-					fmt.Println("COLLISION with brick #" + fmt.Sprintf("%d", i))
-				}
-				return append(bricks[:i], bricks[i+1:]...)*/
-
 			}
 		}
 	}
 	return bricks
 }
 
-func gameOver(){
+func gameOver() {
 	var waiting = true
-	for waiting{
+	for waiting {
 		rl.DrawText("Game Over.", 10, 10, 20, rl.DarkGray)
-		if rl.IsKeyDown(rl.KeySpace){
+		if rl.IsKeyDown(rl.KeySpace) {
 			waiting = false
 		}
 	}
 }
 
 func movePaddle() {
-	if !paddleFollowing{
+	if !paddleFollowing {
 		if rl.IsKeyDown(rl.KeyRight) {
 			paddlePos = paddlePos + 10
 		} else if rl.IsKeyDown(rl.KeyLeft) {
 			paddlePos = paddlePos - 10
 		} else if rl.IsKeyDown(rl.KeySpace) {
 			playing = true
-			ballMoveX = int32(launchAngle)
-			ballMoveY = int32(math.Abs(launchAngle)) - 8
+			ballMoveX = 1
+			ballMoveY = -1
 		}
 
 		if paddlePos < -5 {
@@ -126,7 +135,7 @@ func movePaddle() {
 			paddlePos = -5
 		}
 
-	}else{
+	} else {
 		paddlePos = rl.GetMouseX()
 		if rl.IsKeyDown(rl.KeySpace) {
 			playing = true
@@ -141,7 +150,7 @@ func launchBall() {
 
 	rl.DrawLineEx(rl.NewVector2(float32(ballX), float32(ballY)),
 		rl.NewVector2(float32(ballX+int32(launchAngle)*5), float32(ballY-(25-int32(math.Abs(launchAngle))))), 5, rl.Blue)
-	if launchAngle == -8 && movingLeft {
+	/*if launchAngle == -8 && movingLeft {
 		movingLeft = false
 	} else if movingLeft {
 		launchAngle--
@@ -149,7 +158,8 @@ func launchBall() {
 		launchAngle++
 	} else if launchAngle == 8 {
 		movingLeft = true
-	}
+	}*/
+	launchAngle = -5
 
 }
 
@@ -166,7 +176,7 @@ func reset() Bricks {
 
 func drawBricks(bricks Bricks) {
 	for i := 0; i <= len(bricks)-1; i++ {
-		if(bricks[i][2] == 100) {
+		if bricks[i][2] == 100 {
 			rl.DrawRectangle(bricks[i][0], bricks[i][1], blockWidth, blockHeight, rl.Red)
 		} else {
 			rl.DrawRectangle(bricks[i][0], bricks[i][1], blockWidth, blockHeight, rl.Blue)
@@ -181,11 +191,11 @@ func drawBricks(bricks Bricks) {
 func genBricks() Bricks {
 	rand.Seed(time.Now().UTC().UnixNano())
 	bricks := Bricks{}
-	for i := int32(1); i <= windowX; i = i + blockWidth + 1 {
+	for i := int32(1); i <= 150; i = i + blockWidth + 1 {
 		for j := int32(0); j <= blockRow; j++ {
-			if 1 + rand.Intn(9) > 8 {
+			if 1+rand.Intn(9) > 8 {
 				bricks = append(bricks, []int32{i, int32(11) * j, 200})
-			}else{
+			} else {
 				bricks = append(bricks, []int32{i, int32(11) * j, 100})
 			}
 		}
@@ -196,18 +206,17 @@ func genBricks() Bricks {
 func drawBoard(bricks Bricks) {
 	drawBricks(bricks)
 	rl.DrawRectangle(paddlePos, windowY-20, paddleWidth, 10, rl.Red)
-	rl.DrawText(fmt.Sprintf("%v",score), 750,windowY-40 , 10,rl.Red)
+	rl.DrawText(fmt.Sprintf("%v", score), 750, windowY-40, 10, rl.Red)
 }
 
 func main() {
 	rl.InitWindow(windowX, windowY, "Breakout")
-	rl.SetTargetFPS(60)
+	rl.SetTargetFPS(15)
 	rl.BeginDrawing()
 	bricks := genBricks()
 
 	for !rl.WindowShouldClose() {
 		rl.ClearBackground(rl.RayWhite)
-		bricks = checkRebound(bricks)
 		if rl.IsKeyDown(rl.KeyR) {
 			bricks = reset()
 		}
@@ -221,9 +230,9 @@ func main() {
 			launchBall()
 		}
 
-		fmt.Printf("epic number: %d",len(bricks))
-		if len(bricks) < 430 {
-			fmt.Println("uhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh")
+		bricks = checkRebound(bricks)
+
+		if len(bricks) < 0 {
 			gameOver()
 		}
 		/*bool CheckCollisionPointRec(Vector2 point, Rectangle rec);  // Check if point is inside rectangle*/

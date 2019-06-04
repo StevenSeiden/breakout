@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/dogboy21/go-discord-rp/connection"
 	"github.com/gen2brain/raylib-go/raylib"
 	"math"
 	"math/rand"
@@ -13,7 +12,7 @@ var windowX int32 = 807
 var windowY int32 = 450
 
 const blockWidth int32 = 30
-const blockHeight int32 = 10
+const blockHeight int32 = 15
 
 var blockRow int32 = 15
 var paddlePos = windowX/2 - paddleWidth/2
@@ -21,7 +20,7 @@ var paddlePos = windowX/2 - paddleWidth/2
 const ballSize float32 = 10
 
 var ballX = windowX/2 + 10/2
-var ballY = windowY - 300
+var ballY = windowY - 30
 var launchAngle float64 = 0
 var ballMoveX int32 = 0
 var ballMoveY int32 = 0
@@ -31,14 +30,14 @@ var paddleWidth int32 = 80
 var score = 0
 var paddleFollowing = true
 
-const debugMode = false
+const debugMode = true
 
 type Bricks [][]int32
 
 func init() {
-	connection.OpenSocket("564965758178820146")
-	connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score), "pixel_large",
-		"Beta", "logo_pixelated", "This is a picture of Taylor.")
+	//connection.OpenSocket("564965758178820146")
+	//connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score), "pixel_large",
+		//"Beta", "logo_pixelated", "This is a picture of Taylor.")
 }
 
 func getTime(ballPos int32, ballSpeed int32, brickPosition int32) float64 {
@@ -48,6 +47,7 @@ func getTime(ballPos int32, ballSpeed int32, brickPosition int32) float64 {
 	}
 	return retVal
 }
+
 
 func checkRebound(bricks Bricks) Bricks {
 	if ballY >= (windowY - 25) {
@@ -63,6 +63,12 @@ func checkRebound(bricks Bricks) Bricks {
 	} else if ballY > windowY-20 {
 		return reset()
 	} else { //Checking for brick collisions
+
+		collisionOccurred := false
+		closestBrick := 0
+		closestBrickTime := math.MaxFloat64
+		var closestBrickSide bool	//False if horiz and true if vert
+
 		for i := 0; i <= len(bricks)-1; i++ {
 			if debugMode {
 				fmt.Println("Checking brick #" + fmt.Sprintf("%d", i))
@@ -71,37 +77,50 @@ func checkRebound(bricks Bricks) Bricks {
 			if ballX+int32(ballSize) >= bricks[i][0] && ballX-int32(ballSize) <= bricks[i][0]+blockWidth &&
 				(ballY-int32(ballSize) <= bricks[i][1]+blockHeight && ballY+int32(ballSize) >= bricks[i][1]) {
 
+				collisionOccurred = true
 				timeToLeft := getTime(ballX+int32(ballSize), ballMoveX, bricks[i][0])
 				timeToRight := getTime(ballX-int32(ballSize), ballMoveX, bricks[i][0]+blockWidth)
 				timeToTop := getTime(ballY+int32(ballSize), ballMoveY, bricks[i][1])
 				timeToBottom := getTime(ballY-int32(ballSize), ballMoveY, bricks[i][1]+blockWidth)
 
-				if timeToLeft < timeToTop &&
-					timeToLeft < timeToBottom ||
-					timeToRight < timeToTop &&
-						timeToRight < timeToBottom {
-					ballMoveX = -ballMoveX
-					score = score + int(bricks[i][2])
-					connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score),
-						"pixel_large", "Beta", "logo_pixelated",
-						"This is a picture of Taylor.")
-					if debugMode {
-						fmt.Println("COLLISION with brick #" + fmt.Sprintf("%d", i))
-					}
-					return append(bricks[:i], bricks[i+1:]...)
-				} else {
-					ballMoveY = -ballMoveY
-					score = score + int(bricks[i][2])
-
-					connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score),
-						"pixel_large", "Beta", "logo_pixelated",
-						"This is a picture of Taylor.")
-					if debugMode {
-						fmt.Println("COLLISION with brick #" + fmt.Sprintf("%d", i))
-					}
-					return append(bricks[:i], bricks[i+1:]...)
+				if timeToLeft < closestBrickTime {
+					closestBrick = i
+					closestBrickTime = timeToLeft
+					closestBrickSide = false
+				}
+				if timeToRight < closestBrickTime {
+					closestBrick = i
+					closestBrickTime = timeToRight
+					closestBrickSide = false
+				}
+				if timeToTop < closestBrickTime {
+					closestBrick = i
+					closestBrickTime = timeToRight
+					closestBrickSide = true
+				}
+				if timeToBottom < closestBrickTime {
+					closestBrick = i
+					closestBrickTime = timeToRight
+					closestBrickSide = true
 				}
 			}
+		}
+
+		if collisionOccurred {
+			if !closestBrickSide {
+				ballMoveY = -ballMoveY
+			} else {
+				ballMoveX = -ballMoveX
+			}
+
+			score = score + int(bricks[closestBrick][2])
+			//connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score),
+			//"pixel_large", "Beta", "logo_pixelated",
+			//"This is a picture of Taylor.")
+			if debugMode {
+				fmt.Println("COLLISION with brick #" + fmt.Sprintf("%d", closestBrick))
+			}
+			return append(bricks[:closestBrick], bricks[closestBrick+1:]...)
 		}
 	}
 	return bricks
@@ -136,7 +155,9 @@ func movePaddle() {
 		}
 
 	} else {
-		paddlePos = rl.GetMouseX()
+		if !debugMode {
+			paddlePos = rl.GetMouseX()
+		}
 		if rl.IsKeyDown(rl.KeySpace) {
 			playing = true
 			ballMoveX = int32(launchAngle)
@@ -191,12 +212,12 @@ func drawBricks(bricks Bricks) {
 func genBricks() Bricks {
 	rand.Seed(time.Now().UTC().UnixNano())
 	bricks := Bricks{}
-	for i := int32(1); i <= 150; i = i + blockWidth + 1 {
+	for i := int32(1); i <= windowX; i = i + blockWidth + 1 {
 		for j := int32(0); j <= blockRow; j++ {
 			if 1+rand.Intn(9) > 8 {
-				bricks = append(bricks, []int32{i, int32(11) * j, 200})
+				bricks = append(bricks, []int32{i, int32(16) * j, 200})
 			} else {
-				bricks = append(bricks, []int32{i, int32(11) * j, 100})
+				bricks = append(bricks, []int32{i, int32(16) * j, 100})
 			}
 		}
 	}
@@ -211,7 +232,7 @@ func drawBoard(bricks Bricks) {
 
 func main() {
 	rl.InitWindow(windowX, windowY, "Breakout")
-	rl.SetTargetFPS(15)
+	rl.SetTargetFPS(60000)
 	rl.BeginDrawing()
 	bricks := genBricks()
 
@@ -226,11 +247,11 @@ func main() {
 			ballX += ballMoveX
 			ballY += ballMoveY
 			rl.DrawCircle(ballX, ballY, ballSize, rl.DarkPurple)
+			bricks = checkRebound(bricks)
 		} else {
 			launchBall()
 		}
 
-		bricks = checkRebound(bricks)
 
 		if len(bricks) < 0 {
 			gameOver()

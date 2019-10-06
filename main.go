@@ -30,11 +30,12 @@ var paddleWidth int32 = 80
 var score = 0
 var paddleFollowing = true
 
-const debugMode = true
+const debugMode = false
 
 type Bricks [][]int32
 
 func init() {
+	//Discord integration, not vital
 	//connection.OpenSocket("564965758178820146")
 	//connection.SetActivity("Playing", "Score: "+fmt.Sprintf("%d", score), "pixel_large",
 		//"Beta", "logo_pixelated", "This is a picture of Taylor.")
@@ -171,7 +172,7 @@ func launchBall() {
 
 	rl.DrawLineEx(rl.NewVector2(float32(ballX), float32(ballY)),
 		rl.NewVector2(float32(ballX+int32(launchAngle)*5), float32(ballY-(25-int32(math.Abs(launchAngle))))), 5, rl.Blue)
-	/*if launchAngle == -8 && movingLeft {
+	if launchAngle == -8 && movingLeft {
 		movingLeft = false
 	} else if movingLeft {
 		launchAngle--
@@ -179,7 +180,8 @@ func launchBall() {
 		launchAngle++
 	} else if launchAngle == 8 {
 		movingLeft = true
-	}*/
+	}
+	//Bugs with changing launch angle, disabled for now below by overriding launchAngle value
 	launchAngle = -5
 
 }
@@ -232,7 +234,7 @@ func drawBoard(bricks Bricks) {
 
 func main() {
 	rl.InitWindow(windowX, windowY, "Breakout")
-	rl.SetTargetFPS(60000)
+	rl.SetTargetFPS(60)
 	rl.BeginDrawing()
 	bricks := genBricks()
 
